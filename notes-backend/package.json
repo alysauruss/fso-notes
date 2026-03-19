@@ -1,0 +1,29 @@
+{
+  "name": "notes-backend",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "Aly",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint .",
+    "build:ui": "rimraf dist && cd ..\\notes-frontend && npm run build && xcopy dist ..\\notes-backend\\dist /E /I /Y",
+    "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push"
+  },
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "mongoose": "^9.3.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "eslint": "^10.0.3",
+    "globals": "^17.4.0",
+    "rimraf": "^6.1.3"
+  }
+}
