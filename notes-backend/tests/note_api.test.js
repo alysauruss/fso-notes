@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const supertest = require('supertest');
 const app = require('../app');
 const helper = require('./test_helper');
+
 const Note = require('../models/note');
 
 // supertest wraps our express app so we can make HTTP requests to it
@@ -56,7 +57,7 @@ describe('when there is initially some notes saved', () => {
   // ------------------------------------------------------------------
   describe('viewing a specific note', () => {
     // Happy path — fetch a real note by its actual MongoDB id.
-    // Uses blogsInDb() to get the real id (not a hardcoded fake one).
+    // Uses notesInDb() to get the real id (not a hardcoded fake one).
     test('succeeds with a valid id', async () => {
       const notesAtStart = await helper.notesInDb();
       const noteToView = notesAtStart[0]; // grab the first seeded note
@@ -100,6 +101,7 @@ describe('when there is initially some notes saved', () => {
       const newNote = {
         content: 'async/await simplifies making async calls',
         important: true,
+        userId: '69becb8c309fab270e9b7cdc',
       };
 
       await api
@@ -107,6 +109,14 @@ describe('when there is initially some notes saved', () => {
         .send(newNote)
         .expect(201)
         .expect('Content-Type', /application\/json/);
+
+      //debugging, do const response = await api above. will show the actual vs expected response
+      // assert.strictEqual(
+      //   response.status,
+      //   201,
+      //   `server responded with: ${JSON.stringify(response.body)}`,
+      // );
+      // assert.match(response.headers['content-type'], /application\/json/);
 
       const notesAtEnd = await helper.notesInDb();
       // count should have increased by exactly 1
@@ -206,3 +216,4 @@ after(async () => {
 });
 
 // npm test -- tests/note_api.test.js
+// npm test -- --test-only

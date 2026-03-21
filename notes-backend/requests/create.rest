@@ -1,7 +1,24 @@
+GET http://localhost:3001/api/notes
+
+###
+GET http://localhost:3001/api/users
+
+###
 POST http://localhost:3001/api/notes
 Content-Type: application/json
 
 {
-  "content": "lol",
-  "important": true
+  "content": "async/await simplifies making async calls",
+  "important": true,
+  "userId": "69bec48fc782511be5adff8e"
+}
+
+###
+POST http://localhost:3001/api/users
+Content-Type: application/json
+
+{
+  "username": "mluukkai123",
+  "name": "Matti Luukkainen",
+  "password": "bish"
 }

@@ -2,6 +2,7 @@ const config = require('./utils/config');
 const logger = require('./utils/logger');
 const middleware = require('./utils/middleware');
 const notesRouter = require('./controllers/notes');
+const usersRouter = require('./controllers/users');
 
 const express = require('express');
 const mongoose = require('mongoose');
@@ -23,10 +24,8 @@ app.use(express.static('dist'));
 app.use(express.json());
 app.use(middleware.requestLogger);
 
-// all notes routes are handled by notesRouter
-// the '/api/notes' prefix is defined here, that's why the router uses '/' and '/:id'
 app.use('/api/notes', notesRouter);
-
+app.use('/api/users', usersRouter);
 app.use(middleware.unknownEndpoint);
 app.use(middleware.errorHandler);
 
