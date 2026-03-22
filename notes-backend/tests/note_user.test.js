@@ -42,7 +42,7 @@ describe('when there is initally one user in db', () => {
     assert(usernames.includes(newUser.username));
   });
 
-  test('creation fails with proper statuscode and message if username already taken', async () => {
+  test('creation fails if username already taken', async () => {
     const usersAtStart = await helper.usersInDb();
 
     const newUser = {
@@ -63,7 +63,7 @@ describe('when there is initally one user in db', () => {
     assert.strictEqual(usersAtEnd.length, usersAtStart.length);
   });
 
-  test('creation fails with proper statuscode and message if username is too short', async () => {
+  test('creation fails if username is too short', async () => {
     const newUser = {
       username: 'ml',
       name: 'Matti Luukkainen',
@@ -81,22 +81,16 @@ describe('when there is initally one user in db', () => {
     );
   });
 
-  test('creation fails with proper statuscode and message if username is not consisted of only letters', async () => {
+  test('creation fails if username is missing', async () => {
     const newUser = {
-      username: 'mluukkai123',
-      name: 'Matti Luukkainen',
-      password: 'salainen',
+      name: 'Valid User',
+      password: 'validpassword',
+      // no username
     };
 
-    const result = await api
-      .post('/api/users')
-      .send(newUser)
-      .expect(400)
-      .expect('Content-Type', /application\/json/);
+    const result = await api.post('/api/users').send(newUser).expect(400);
 
-    assert(
-      result.body.error.includes('username must be consisted of only letters'),
-    );
+    assert(result.body.error.includes('username missing'));
   });
 });
 

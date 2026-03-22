@@ -4,8 +4,11 @@ const mongoose = require('mongoose');
 const supertest = require('supertest');
 const app = require('../app');
 const helper = require('./test_helper');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
 const Note = require('../models/note');
+const User = require('../models/user');
 
 // supertest wraps our express app so we can make HTTP requests to it
 // without actually starting a real server on a port
@@ -21,9 +24,25 @@ describe('when there is initially some notes saved', () => {
   // It wipes the test database clean, then inserts our known seed data.
   // This guarantees every test starts from the exact same state,
   // so tests don't accidentally affect each other.
+  let token;
   beforeEach(async () => {
     await Note.deleteMany({}); // wipe everything
     await Note.insertMany(helper.initialNotes); // insert fresh seed data
+
+    // create a fresh test user and log in to get a token
+    await User.deleteMany({});
+    const passwordHash = await bcrypt.hash('testpassword', 10);
+    await new User({
+      username: 'testuser',
+      name: 'Test User',
+      passwordHash,
+    }).save();
+
+    const loginResponse = await api
+      .post('/api/login')
+      .send({ username: 'testuser', password: 'testpassword' });
+
+    token = loginResponse.body.token;
   });
 
   // Basic sanity check: does GET /api/notes return 200 and JSON?
@@ -101,11 +120,11 @@ describe('when there is initially some notes saved', () => {
       const newNote = {
         content: 'async/await simplifies making async calls',
         important: true,
-        userId: '69becb8c309fab270e9b7cdc',
       };
 
       await api
         .post('/api/notes')
+        .set('Authorization', `Bearer ${token}`) // set the token in the header
         .send(newNote)
         .expect(201)
         .expect('Content-Type', /application\/json/);
@@ -132,7 +151,11 @@ describe('when there is initially some notes saved', () => {
     test('fails with status code 400 if data invalid', async () => {
       const newNote = { important: true }; // missing required 'content'
 
-      await api.post('/api/notes').send(newNote).expect(400);
+      await api
+        .post('/api/notes')
+        .set('Authorization', `Bearer ${token}`)
+        .send(newNote)
+        .expect(400);
 
       const notesAtEnd = await helper.notesInDb();
 
@@ -140,46 +163,95 @@ describe('when there is initially some notes saved', () => {
       assert.strictEqual(notesAtEnd.length, helper.initialNotes.length);
     });
 
-    describe('updating a note', () => {
-      test('succeeds with updating valid data', async () => {
-        const notesAtStart = await helper.notesInDb();
-        const noteToUpdate = notesAtStart[0];
+    test('fails with 401 if token missing', async () => {
+      const newNote = {
+        content: 'this should fail',
+        important: true,
+      };
 
-        const updatedNoteData = {
-          content: 'Updated Content',
-          important: noteToUpdate.important,
-        };
+      await api
+        .post('/api/notes')
+        .send(newNote) // no token attached
+        .expect(401);
+    });
 
-        await api
-          .put(`/api/notes/${noteToUpdate.id}`)
-          .send(updatedNoteData)
-          .expect(200)
-          .expect('Content-Type', /application\/json/);
+    test('fails with 401 when token is expired', async () => {
+      // create an already-expired token
+      const expiredToken = jwt.sign(
+        { username: 'testuser', id: 'someid' },
+        process.env.SECRET,
+        { expiresIn: -1 }, // already expired
+      );
 
-        const notesAtEnd = await helper.notesInDb();
-        const updatedNote = notesAtEnd.find((n) => n.id === noteToUpdate.id);
+      const newNote = { content: 'this should fail', important: true };
 
-        assert.strictEqual(updatedNote.content, 'Updated Content');
-      });
+      const result = await api
+        .post('/api/notes')
+        .set('Authorization', `Bearer ${expiredToken}`)
+        .send(newNote)
+        .expect(401);
 
-      test('fails with status code 400 if updated data invalid', async () => {
-        const notesAtStart = await helper.notesInDb();
-        const noteToUpdate = notesAtStart[0];
+      assert(result.body.error.includes('token expired'));
+    });
 
-        const invalidUpdatedNoteData = {
-          content: '',
-        };
+    test('created note is linked to the authenticated user', async () => {
+      const newNote = { content: 'checking user link', important: true };
 
-        await api
-          .put(`/api/notes/${noteToUpdate.id}`)
-          .send(invalidUpdatedNoteData)
-          .expect(400);
+      const response = await api
+        .post('/api/notes')
+        .set('Authorization', `Bearer ${token}`)
+        .send(newNote)
+        .expect(201);
 
-        const notesAtEnd = await helper.notesInDb();
-        const unchangedNote = notesAtEnd.find((n) => n.id === noteToUpdate.id);
+      // check the returned note has a user field
+      assert(response.body.user);
 
-        assert.strictEqual(unchangedNote.content, noteToUpdate.content);
-      });
+      // verify it matches the logged in user
+      const users = await helper.usersInDb();
+      const testUser = users.find((u) => u.username === 'testuser');
+      assert.strictEqual(response.body.user, testUser.id);
+    });
+  });
+
+  describe('updating a note', () => {
+    test('succeeds with updating valid data', async () => {
+      const notesAtStart = await helper.notesInDb();
+      const noteToUpdate = notesAtStart[0];
+
+      const updatedNoteData = {
+        content: 'Updated Content',
+        important: noteToUpdate.important,
+      };
+
+      await api
+        .put(`/api/notes/${noteToUpdate.id}`)
+        .send(updatedNoteData)
+        .expect(200)
+        .expect('Content-Type', /application\/json/);
+
+      const notesAtEnd = await helper.notesInDb();
+      const updatedNote = notesAtEnd.find((n) => n.id === noteToUpdate.id);
+
+      assert.strictEqual(updatedNote.content, 'Updated Content');
+    });
+
+    test('fails with status code 400 if updated data invalid', async () => {
+      const notesAtStart = await helper.notesInDb();
+      const noteToUpdate = notesAtStart[0];
+
+      const invalidUpdatedNoteData = {
+        content: '',
+      };
+
+      await api
+        .put(`/api/notes/${noteToUpdate.id}`)
+        .send(invalidUpdatedNoteData)
+        .expect(400);
+
+      const notesAtEnd = await helper.notesInDb();
+      const unchangedNote = notesAtEnd.find((n) => n.id === noteToUpdate.id);
+
+      assert.strictEqual(unchangedNote.content, noteToUpdate.content);
     });
   });
 

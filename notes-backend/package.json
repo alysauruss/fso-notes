@@ -9,7 +9,7 @@
   "scripts": {
     "start": "cross-env NODE_ENV=production node index.js",
     "dev": "cross-env NODE_ENV=development node --watch index.js",
-    "test": "cross-env  NODE_ENV=test node --test",
+    "test": "cross-env  NODE_ENV=test node --test --test-concurrency=1",
     "lint": "eslint .",
     "build:ui": "rimraf dist && cd ..\\notes-frontend && npm run build && xcopy dist ..\\notes-backend\\dist /E /I /Y",
     "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push"
@@ -19,6 +19,7 @@
     "cross-env": "^10.1.0",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.3.0"
   },
   "devDependencies": {

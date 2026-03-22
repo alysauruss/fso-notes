@@ -6,11 +6,11 @@ GET http://localhost:3001/api/users
 ###
 POST http://localhost:3001/api/notes
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IlRlc3RpbmciLCJpZCI6IjY5YmY3M2I0MTI1YWQ3MmQxYTNmNGYxZiIsImlhdCI6MTc3NDE1NTEwNH0.QlWkZNEDjWJKIaNHKOYXZ-Mow1PTW6L0-tvx0No4z4U
 
 {
-  "content": "async/await simplifies making async calls",
-  "important": true,
-  "userId": "69bec48fc782511be5adff8e"
+  "content": "testing token",
+  "important": true
 }
 
 ###
@@ -18,7 +18,7 @@ POST http://localhost:3001/api/users
 Content-Type: application/json
 
 {
-  "username": "mluukkai123",
-  "name": "Matti Luukkainen",
-  "password": "bish"
+  "username": "Testing",
+  "name": "Testing Name",
+  "password": "testing"
 }
