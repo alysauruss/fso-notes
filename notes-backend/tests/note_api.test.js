@@ -5,7 +5,7 @@ const supertest = require('supertest');
 const app = require('../app');
 const helper = require('./test_helper');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 const Note = require('../models/note');
 const User = require('../models/user');

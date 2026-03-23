@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const usersRouter = require('express').Router();
 const User = require('../models/user');
 
@@ -40,7 +40,7 @@ usersRouter.post('/', async (request, response) => {
   });
 
   const savedUser = await user.save();
-  response.status(201).json(savedUser);
+  return response.status(201).json(savedUser);
 });
 
 // delete

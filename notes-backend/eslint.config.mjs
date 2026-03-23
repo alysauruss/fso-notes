@@ -29,14 +29,14 @@ export default [
       // --- Variables ---
       'prefer-const': 'error', // use const unless you need to reassign
       'no-var': 'error', // ban var, use let/const instead
-      'no-unused-vars': 'warning', // no declared variables that are never used
+      'no-unused-vars': 'warn', // no declared variables that are never used
 
       // --- Equality ---
       eqeqeq: 'error', // always === instead of ==
 
       // --- Functions ---
       'prefer-arrow-callback': 'error', // use arrow functions in callbacks, not function()
-      'arrow-body-style': ['error', 'as-needed'], // omit {} and return when not needed
+      // 'arrow-body-style': ['error', 'as-needed'], // omit {} and return when not needed
       'arrow-parens': ['error', 'always'], // always include parentheses around arrow function parameters
 
       // --- Objects & Arrays ---

@@ -1,5 +1,6 @@
 const notesRouter = require('express').Router();
 const jwt = require('jsonwebtoken');
+
 const Note = require('../models/note');
 const User = require('../models/user');
 
@@ -35,7 +36,7 @@ notesRouter.post('/', async (request, response) => {
 
   const decodedToken = jwt.verify(getTokenFrom(request), process.env.SECRET);
   if (!decodedToken.id) {
-    return response.status(401).json({ error: 'token invalid' });
+    return response.status(401).json({ error: 'Token invalid' });
   }
 
   const user = await User.findById(decodedToken.id);
@@ -54,7 +55,7 @@ notesRouter.post('/', async (request, response) => {
   user.notes = user.notes.concat(savedNote._id); //saves the note's id to the user's notes array
   await user.save();
 
-  response.status(201).json(savedNote);
+  return response.status(201).json(savedNote);
 });
 
 // delete a note by id
