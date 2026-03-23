@@ -1,17 +1,7 @@
-const Footer = () => {
-    const footerStyle = {
-        color: 'green',
-        fontStyle: 'italic'
-    }
+const Footer = () => (
+  <footer className="py-6 text-center text-sm italic text-green-600">
+    Note app, Department of Computer Science, University of Helsinki 2025
+  </footer>
+);
 
-    return (
-        <div style={footerStyle}>
-            <br />
-            <p>
-                Note app, Department of Computer Science, University of Helsinki 2025
-            </p>
-        </div>
-    )
-}
-
-export default Footer
+export default Footer;

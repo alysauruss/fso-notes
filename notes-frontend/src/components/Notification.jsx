@@ -1,13 +1,16 @@
-const Notification = ({ message }) => {
-    if (message === null) {
-        return null
-    }
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
-    return (
-        <div className="error">
-            {message}
-        </div>
-    )
-}
+const Notification = ({ message, type, title }) => {
+  if (!message) return null;
 
-export default Notification
+  return (
+    <div className="mx-auto max-w-2xl px-4 pt-4">
+      <Alert variant={type ?? "default"}>
+        {title ? <AlertTitle>{title}</AlertTitle> : null}
+        <AlertDescription>{message}</AlertDescription>
+      </Alert>
+    </div>
+  );
+};
+
+export default Notification;
